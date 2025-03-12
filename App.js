@@ -1,35 +1,22 @@
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, Button } from 'react-native';
-import { useState } from 'react';
-import StorageComponent from './components/StorageComponent';
-import RecordList from './components/RecordList';
+import { StyleSheet, Text, View } from 'react-native';
+import AsyncStorage from './componentes/AsyncStorage';
 
 export default function App() {
-  const [currentScreen, setCurrentScreen] = useState('product');
-  
   return (
-    <View style={styles.container}>
-      <Text style={styles.header}>Local Storage</Text>
-      {currentScreen === 'product' ? (
-        <StorageComponent setScreen={setCurrentScreen} />
-      ) : (
-        <RecordList setScreen={setCurrentScreen} />
-      )}
+    <View style={estilos.container}>
+      
+      <AsyncStorage/>
       <StatusBar style="auto" />
     </View>
   );
 }
 
-const styles = StyleSheet.create({
+const estilos = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  header: {
-    marginTop: 100,
-    fontSize: 20,
-    fontStyle: 'italic',
   },
 });

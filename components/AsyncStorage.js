@@ -1,83 +1,75 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, FlatList, Button, Alert } from 'react-native';
-
+import { StyleSheet, Text, View, Button, Alert, FlatList } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Produto from './produto';
 
 export default function Storage() {
-  const [registros, setRegistros] = useState([]);
-  const [telaAtual, setTelaAtual] = useState('produto'); // Estado para controlar a tela
+    const [registros, setRegistros] = useState([]);
+    const [telaAtual, setTelaAtual] = useState('produto'); // Estado para controlar a tela 
 
-  const salvarNoAsyncStorage = async (qtd, produto, valor) => {
-    try {
-      const registro = { qtd, produto, valor };
+    const salvarNoAsyncStorage = async (qtd, produto, valor) => {
+        try {
+            const registro = { qtd, produto, valor };
+            // Recupera os registros anteriores do AsyncStorage 
+            const registrosExistentes = await AsyncStorage.getItem('registros');
+            const registrosAnteriores = registrosExistentes ? JSON.parse(registrosExistentes) : [];
+            // Adiciona o novo registro
+            const novosRegistros = [...registrosAnteriores, registro];
+            // Armazena novamente no AsyncStorage 
+            await AsyncStorage.setItem('registros', JSON.stringify(novosRegistros));
+            setRegistros(novosRegistros);
+            Alert.alert('Sucesso', 'Registro salvo com sucesso!');
+        } catch (error) {
+            console.error('Erro ao salvar no AsyncStorage:', error);
+            Alert.alert('Erro', 'Ocorreu um erro ao salvar os dados.');
+        }
+    };
 
-      const registrosExistentes = await AsyncStorage.getItem('registros');
-      const registros = registrosExistentes ? JSON.parse(registrosExistentes) : [];
+    const carregarRegistros = async () => {
+        try {
+            const registrosExistentes = await AsyncStorage.getItem('registros');
+            const registrosCarregados = registrosExistentes ? JSON.parse(registrosExistentes) : [];
+            setRegistros(registrosCarregados);
+        } catch (error) {
+            console.error('Erro ao carregar registros:', error);
+            Alert.alert('Erro', 'Ocorreu um erro ao carregar os dados.');
+        }
+    };
 
-      registros.push(registro);
+    useEffect(() => {
+        carregarRegistros();
+    }, []);
 
-      await AsyncStorage.setItem('registros', JSON.stringify(registros));
-
-      Alert.alert('Sucesso', 'Registro salvo com sucesso!');
-      carregarRegistros(); // Atualiza a lista após salvar
-    } catch (error) {
-      console.error('Erro ao salvar no AsyncStorage:', error);
-      Alert.alert('Erro', 'Ocorreu um erro ao salvar os dados.');
-    }
-  };
-
-  const carregarRegistros = async () => {
-    try {
-      const registrosExistentes = await AsyncStorage.getItem('registros');
-      const registros = registrosExistentes ? JSON.parse(registrosExistentes) : [];
-      setRegistros(registros); // Atualiza o estado com os registros recuperados
-    } catch (error) {
-      console.error('Erro ao carregar registros:', error);
-      Alert.alert('Erro', 'Ocorreu um erro ao carregar os dados.');
-    }
-  };
-
-  useEffect(() => {
-    carregarRegistros(); // Carrega os registros ao montar o componente
-  }, []);
-
-  return (
-    <View style={styles.container}>
-      {telaAtual === 'produto' ? (
-        <>
-          <Produto
-            onSalvarDados={salvarNoAsyncStorage}
-            telaAtual={telaAtual}
-            setTelaAtual={setTelaAtual} // Passa a função setTelaAtual para atualizar o estado
-          />
-        </>
-      ) : (
-        <>
-          <Text style={styles.titulo}>Registros Salvos:</Text>
-          <FlatList
-            data={registros}
-            keyExtractor={(item, index) => index.toString()}
-            renderItem={({ item }) => (
-              <View style={styles.item}>
-                <Text>Quantidade: {item.qtd}</Text>
-                <Text>Produto: {item.produto}</Text>
-                <Text>Valor: {item.valor}</Text>
-              </View>
+    return (
+        <View style={styles.container}>
+            {telaAtual === 'produto' ? (
+                <Produto onSalvarDados={salvarNoAsyncStorage} setTelaAtual={setTelaAtual} />
+            ) : (
+                <>
+                    <Text style={styles.titulo}>Registros Salvos:</Text>
+                    <FlatList 
+                        data={registros}
+                        keyExtractor={(item, index) => index.toString()}
+                        renderItem={({ item }) => (
+                            <View style={styles.item}>
+                                <Text>Quantidade: {item.qtd}</Text>
+                                <Text>Produto: {item.produto}</Text>
+                                <Text>Valor: {item.valor}</Text>
+                            </View>
+                        )}
+                    />
+                    <Button title='Voltar para Cadastro' onPress={() => setTelaAtual('produto')} />
+                </>
             )}
-          />
-          <Button title="Voltar para Cadastro" onPress={() => setTelaAtual('produto')} />
-        </>
-      )}
-    </View>
-  );
+        </View>
+    );
 }
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
         padding: 20,
-        backgroundColor: '#fff',
+        backgroundColor: '#fff'
     },
     titulo: {
         fontSize: 18,
