@@ -1,30 +1,20 @@
 import React, { useState } from 'react';
-import { StyleSheet,Text, View, TextInput, Button } from 'react-native';
+import { StyleSheet, Text, View, TextInput, Button, Alert } from 'react-native';
 import { TextInputMask } from 'react-native-masked-text';
-import { Alert } from 'react-native';
-
 
 export default function Produto({ onSalvarDados, setTelaAtual }) {
-
     const [qtd, setQtd] = useState('');
     const [produto, setProduto] = useState('');
     const [valor, setValor] = useState('');
 
     const handleSalvar = () => {
         if (qtd && produto && valor) {
-            //Envia os dados para o componente pai usando a função recebida via props
-
             onSalvarDados(qtd, produto, valor);
-            setQtd('');
-            setProduto(''); //Limpa o campo de produto
-            setValor(''); //Limpa o campo de valor
+            limparCampos();
         } else {
-            Alert.alert('Erro', 'Por favor, preencha todos os campos.')
+            Alert.alert('Erro', 'Por favor, preencha todos os campos.');
         }
     };
-
-    
-
 
     const limparCampos = () => {
         setQtd('');
@@ -32,65 +22,60 @@ export default function Produto({ onSalvarDados, setTelaAtual }) {
         setValor('');
     };
 
-    return(
-        <View style={estilos.container}>
-         <Text style={estilos.cabecalho}>Armazenamento Local</Text>  
-            <View style={estilos.inputRow}>
-                <Text style={estilos.label}>Quantidade:</Text>
+    return (
+        <View style={styles.container}>
+            <Text style={styles.cabecalho}>Armazenamento Local</Text>
+            <View style={styles.inputRow}>
+                <Text style={styles.label}>Quantidade:</Text>
                 <TextInput
-                value={qtd}
-                onChangeText={setQtd}
-                style={[estilos.input, {width: '25%'}]}
-                maxLength={6}
-                placeholder='Quantidade'>
-                </TextInput>
+                    value={qtd}
+                    onChangeText={setQtd}
+                    style={[styles.input, { width: '25%' }]}
+                    maxLength={6}
+                    placeholder='Quantidade'
+                />
             </View>
-            <View style={estilos.inputRow}>
-                <Text style={estilos.label}>Produto:</Text>
+            <View style={styles.inputRow}>
+                <Text style={styles.label}>Produto:</Text>
                 <TextInput
-                value={produto}
-                onChangeText={setProduto}
-                style={estilos.input}
-                placeholder='Nome do Produto'
-                maxLength={20}>
-
-                </TextInput>
+                    value={produto}
+                    onChangeText={setProduto}
+                    style={styles.input}
+                    placeholder='Nome do Produto'
+                    maxLength={20}
+                />
             </View>
-            <View style={estilos.inputRow}>
-                <Text style={estilos.label}>Valor:</Text>
+            <View style={styles.inputRow}>
+                <Text style={styles.label}>Valor:</Text>
                 <TextInputMask
-                type={'money'}
-                value={valor}
-                onChangeText={setValor}
-                style={estilos.input}
-                placeholder='Valor do Produto'
-                maxLength={10}
-                keyboardType='numeric'></TextInputMask>
+                    type={'money'}
+                    value={valor}
+                    onChangeText={setValor}
+                    style={styles.input}
+                    placeholder='Valor do Produto'
+                    maxLength={10}
+                    keyboardType='numeric'
+                />
             </View>
-            <Text style={estilos.label} >Quantidade:{qtd}</Text>
-            <Text style={estilos.label} >Produto:{produto}</Text>
-            <Text style={estilos.label}> Valor: {valor}</Text>
-            <View style={estilos.inputRow}>
-                <View style={[estilos.botao,{margin:10}]}>
-                    <Button title='Limpar' onPress={limparCampos}></Button>
+            <View style={styles.inputRow}>
+                <View style={[styles.botao, { margin: 10 }]}>
+                    <Button title='Limpar' onPress={limparCampos} />
                 </View>
-                <View style={[estilos.botao,{margin:10}]}>
-                    <Button title='Salvar' onPress={handleSalvar}></Button>
+                <View style={[styles.botao, { margin: 10 }]}>
+                    <Button title='Salvar' onPress={handleSalvar} />
                 </View>
-                <View style={[estilos.botao, {margin:10}]}> 
-                    <Button title='Ver Registros Salvos'
-                    onPress={() => setTelaAtual('registros')}
-                    ></Button>
+                <View style={[styles.botao, { margin: 10 }]}> 
+                    <Button title='Ver Registros Salvos' onPress={() => setTelaAtual('registros')} />
                 </View>
             </View>
         </View>
     );
 }
 
-const estilos = StyleSheet.create({
-    container:{
-        flex:1,
-        backgroundColor:'#fff',
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        backgroundColor: '#fff',
         alignItems: 'flex-end',
         justifyContent: 'center',
         padding: 25,
@@ -101,7 +86,7 @@ const estilos = StyleSheet.create({
         width: '100%',
         justifyContent: 'flex-end',
     },
-    input:{
+    input: {
         borderWidth: 1,
         borderColor: '#ccc',
         padding: 10,
@@ -114,7 +99,7 @@ const estilos = StyleSheet.create({
     label: {
         fontSize: 16,
         fontWeight: 'bold',
-        marginTop:20
+        marginTop: 20
     },
     botao: {
         marginTop: 20
@@ -124,5 +109,5 @@ const estilos = StyleSheet.create({
         marginBottom: 40,
         fontSize: 20,
         fontStyle: 'italic',
-    } 
-})
+    }
+});

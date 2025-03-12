@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, Button, Alert, FlatList } from 'react-native';
+import { StyleSheet, Text, View, Button, Alert, FlatList, TouchableOpacity } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Produto from './produto';
+import Icon from 'react-native-vector-icons/FontAwesome';
 
 export default function Storage() {
     const [registros, setRegistros] = useState([]);
@@ -10,12 +11,9 @@ export default function Storage() {
     const salvarNoAsyncStorage = async (qtd, produto, valor) => {
         try {
             const registro = { qtd, produto, valor };
-            // Recupera os registros anteriores do AsyncStorage 
             const registrosExistentes = await AsyncStorage.getItem('registros');
             const registrosAnteriores = registrosExistentes ? JSON.parse(registrosExistentes) : [];
-            // Adiciona o novo registro
             const novosRegistros = [...registrosAnteriores, registro];
-            // Armazena novamente no AsyncStorage 
             await AsyncStorage.setItem('registros', JSON.stringify(novosRegistros));
             setRegistros(novosRegistros);
             Alert.alert('Sucesso', 'Registro salvo com sucesso!');
@@ -36,6 +34,31 @@ export default function Storage() {
         }
     };
 
+    const onApagarDados = async () => {
+        try {
+            await AsyncStorage.removeItem('registros');
+            setRegistros([]);
+            Alert.alert('Sucesso', 'Todos os registros foram apagados!');
+        } catch (error) {
+            console.error('Erro ao apagar registros:', error);
+            Alert.alert('Erro', 'Ocorreu um erro ao apagar os dados.');
+        }
+    };
+
+    const onApagarRegistro = async (index) => {
+        try {
+            const registrosExistentes = await AsyncStorage.getItem('registros');
+            let registros = registrosExistentes ? JSON.parse(registrosExistentes) : [];
+            registros.splice(index, 1);
+            await AsyncStorage.setItem('registros', JSON.stringify(registros));
+            setRegistros([...registros]); // Atualiza a lista de registros
+            Alert.alert('Sucesso', 'Registro apagado com sucesso!');
+        } catch (error) {
+            console.error('Erro ao apagar registro:', error);
+            Alert.alert('Erro', 'Ocorreu um erro ao apagar o registro.');
+        }
+    };
+
     useEffect(() => {
         carregarRegistros();
     }, []);
@@ -50,14 +73,20 @@ export default function Storage() {
                     <FlatList 
                         data={registros}
                         keyExtractor={(item, index) => index.toString()}
-                        renderItem={({ item }) => (
+                        renderItem={({ item, index }) => (
                             <View style={styles.item}>
-                                <Text>Quantidade: {item.qtd}</Text>
-                                <Text>Produto: {item.produto}</Text>
-                                <Text>Valor: {item.valor}</Text>
+                                <View>
+                                    <Text>Quantidade: {item.qtd}</Text>
+                                    <Text>Produto: {item.produto}</Text>
+                                    <Text>Valor: {item.valor}</Text>
+                                </View>
+                                <TouchableOpacity onPress={() => onApagarRegistro(index)}>
+                                    <Icon name="trash" size={24} color="red" />
+                                </TouchableOpacity>
                             </View>
                         )}
                     />
+                    <Button title='Apagar Todos' onPress={onApagarDados} color="red" />
                     <Button title='Voltar para Cadastro' onPress={() => setTelaAtual('produto')} />
                 </>
             )}
@@ -82,5 +111,9 @@ const styles = StyleSheet.create({
         padding: 10,
         marginBottom: 10,
         borderRadius: 5,
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
     },
 });
+
