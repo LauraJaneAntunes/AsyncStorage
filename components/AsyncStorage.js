@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, Button, Alert, FlatList, TouchableOpacity } from 'react-native';
+import { StyleSheet, Text, View, Button, Alert, FlatList, TouchableOpacity, Modal } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Produto from './produto';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
 export default function Storage() {
     const [registros, setRegistros] = useState([]);
-    const [telaAtual, setTelaAtual] = useState('produto'); // Estado para controlar a tela 
+    const [telaAtual, setTelaAtual] = useState('produto'); // Estado para controlar a tela
+    const [modalVisible, setModalVisible] = useState(false);
+    const [modalType, setModalType] = useState(null);
+    const [selectedIndex, setSelectedIndex] = useState(null);
 
     const salvarNoAsyncStorage = async (qtd, produto, valor) => {
         try {
@@ -34,10 +37,17 @@ export default function Storage() {
         }
     };
 
+    const confirmarAcao = (tipo, index = null) => {
+        setModalType(tipo);
+        setSelectedIndex(index);
+        setModalVisible(true);
+    };
+
     const onApagarDados = async () => {
         try {
             await AsyncStorage.removeItem('registros');
             setRegistros([]);
+            setModalVisible(false);
             Alert.alert('Sucesso', 'Todos os registros foram apagados!');
         } catch (error) {
             console.error('Erro ao apagar registros:', error);
@@ -45,13 +55,13 @@ export default function Storage() {
         }
     };
 
-    const onApagarRegistro = async (index) => {
+    const onApagarRegistro = async () => {
         try {
-            const registrosExistentes = await AsyncStorage.getItem('registros');
-            let registros = registrosExistentes ? JSON.parse(registrosExistentes) : [];
-            registros.splice(index, 1);
-            await AsyncStorage.setItem('registros', JSON.stringify(registros));
-            setRegistros([...registros]); // Atualiza a lista de registros
+            let registrosAtualizados = [...registros];
+            registrosAtualizados.splice(selectedIndex, 1);
+            await AsyncStorage.setItem('registros', JSON.stringify(registrosAtualizados));
+            setRegistros(registrosAtualizados);
+            setModalVisible(false);
             Alert.alert('Sucesso', 'Registro apagado com sucesso!');
         } catch (error) {
             console.error('Erro ao apagar registro:', error);
@@ -80,16 +90,29 @@ export default function Storage() {
                                     <Text>Produto: {item.produto}</Text>
                                     <Text>Valor: {item.valor}</Text>
                                 </View>
-                                <TouchableOpacity onPress={() => onApagarRegistro(index)}>
+                                <TouchableOpacity onPress={() => confirmarAcao('apagarRegistro', index)}>
                                     <Icon name="trash" size={24} color="red" />
                                 </TouchableOpacity>
                             </View>
                         )}
                     />
-                    <Button title='Apagar Todos' onPress={onApagarDados} color="red" />
+                    <Button title='Apagar Todos' onPress={() => confirmarAcao('apagarTodos')} color="red" />
                     <Button title='Voltar para Cadastro' onPress={() => setTelaAtual('produto')} />
                 </>
             )}
+            
+            {/* Modal de Confirmação */}
+            <Modal visible={modalVisible} transparent animationType="slide">
+                <View style={styles.modalContainer}>
+                    <View style={styles.modalContent}>
+                        <Text>Tem certeza que deseja {modalType === 'apagarTodos' ? 'apagar todos os registros?' : 'apagar este registro?'} </Text>
+                        <View style={styles.modalButtons}>
+                            <Button title="Cancelar" onPress={() => setModalVisible(false)} />
+                            <Button title="Confirmar" onPress={modalType === 'apagarTodos' ? onApagarDados : onApagarRegistro} color="red" />
+                        </View>
+                    </View>
+                </View>
+            </Modal>
         </View>
     );
 }
@@ -98,7 +121,7 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         padding: 20,
-        backgroundColor: '#fff'
+        backgroundColor: '#fff',
     },
     titulo: {
         fontSize: 18,
@@ -115,5 +138,22 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         alignItems: 'center',
     },
+    modalContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    },
+    modalContent: {
+        backgroundColor: 'white',
+        padding: 20,
+        borderRadius: 10,
+        alignItems: 'center',
+    },
+    modalButtons: {
+        flexDirection: 'row',
+        marginTop: 20,
+        justifyContent: 'space-between',
+        width: '100%',
+    },
 });
-
